@@ -34,4 +34,7 @@ locals {
 module "lambda" {
   source     = "./modules/lambda"
   identifier = local.identifier
+  env        = var.env
+  region     = var.region
+  accountId  = var.accountId
 }
