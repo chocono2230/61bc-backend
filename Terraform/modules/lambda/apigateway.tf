@@ -15,7 +15,8 @@ resource "aws_api_gateway_method" "this" {
   rest_api_id   = aws_api_gateway_rest_api.this.id
   resource_id   = aws_api_gateway_resource.this.id
   http_method   = "GET"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.this.id
 }
 
 resource "aws_api_gateway_integration" "this" {
@@ -31,18 +32,10 @@ resource "aws_api_gateway_deployment" "this" {
   rest_api_id = aws_api_gateway_rest_api.this.id
 
   triggers = {
-    # NOTE: The configuration below will satisfy ordering considerations,
-    #       but not pick up all future REST API changes. More advanced patterns
-    #       are possible, such as using the filesha1() function against the
-    #       Terraform configuration file(s) or removing the .id references to
-    #       calculate a hash against whole resources. Be aware that using whole
-    #       resources will show a difference after the initial implementation.
-    #       It will stabilize to only change when resources change afterwards.
-    redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.this.id,
-      aws_api_gateway_method.this.id,
-      aws_api_gateway_integration.this.id,
-    ]))
+    redeployment = join("", [
+      for file in fileset(path.module, "./**/*.tf")
+      : filebase64("${path.module}/${file}")
+    ])
   }
 
   lifecycle {
@@ -120,5 +113,14 @@ resource "aws_iam_role" "apigateway_putlog" {
 EOF
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+  ]
+}
+
+resource "aws_api_gateway_authorizer" "this" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  name        = "${var.identifier}-apigateway-auth"
+  type        = "COGNITO_USER_POOLS"
+  provider_arns = [
+    aws_cognito_user_pool.this.arn
   ]
 }
