@@ -58,6 +58,34 @@ resource "aws_api_gateway_stage" "this" {
   deployment_id = aws_api_gateway_deployment.this.id
   rest_api_id   = aws_api_gateway_rest_api.this.id
   stage_name    = var.env
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.apigateway_accesslog.arn
+    format          = "$context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] \"$context.httpMethod $context.resourcePath $context.protocol\" $context.status $context.responseLength $context.requestId"
+  }
+}
+
+resource "aws_api_gateway_method_settings" "all" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  stage_name  = aws_api_gateway_stage.this.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled = true
+    logging_level   = "INFO"
+  }
+
+  depends_on = [
+    aws_api_gateway_account.this
+  ]
+}
+
+resource "aws_api_gateway_account" "this" {
+  cloudwatch_role_arn = aws_iam_role.apigateway_putlog.arn
+}
+
+resource "aws_cloudwatch_log_group" "apigateway_accesslog" {
+  name = "${var.identifier}-apigateway-log"
 }
 
 # Lambda
@@ -71,21 +99,26 @@ resource "aws_lambda_permission" "this" {
   source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.this.id}/${var.env}/${aws_api_gateway_method.this.http_method}${aws_api_gateway_resource.this.path}"
 }
 
-# IAM
-data "aws_iam_policy_document" "this" {
-  statement {
-    effect = "Allow"
+# IAM Role for API Gateway Put CloudWatch Logs
+resource "aws_iam_role" "apigateway_putlog" {
+  name = "${var.identifier}-apigateway-role"
 
-    principals {
-      type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
     }
-
-    actions = ["sts:AssumeRole"]
-  }
+  ]
 }
-
-resource "aws_iam_role" "role" {
-  name               = "${var.identifier}-apigateway-role"
-  assume_role_policy = data.aws_iam_policy_document.this.json
+EOF
+  managed_policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+  ]
 }

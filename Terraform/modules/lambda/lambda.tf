@@ -2,14 +2,14 @@ resource "aws_lambda_function" "this" {
   function_name    = "${var.identifier}-lambda"
   s3_bucket        = aws_s3_bucket.this.bucket
   s3_key           = data.aws_s3_object.golang_zip.key
-  role             = aws_iam_role.this.arn
+  role             = aws_iam_role.lambda.arn
   handler          = "lambda"
   source_code_hash = data.aws_s3_object.golang_zip_hash.body
   runtime          = "go1.x"
   timeout          = "10"
 }
 
-resource "aws_iam_role" "this" {
+resource "aws_iam_role" "lambda" {
   name = "${var.identifier}-lambda-role"
 
   assume_role_policy = <<-EOF
