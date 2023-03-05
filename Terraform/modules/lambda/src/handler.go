@@ -35,14 +35,22 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{
-			Body:       "respons json marshal error",
+			Body:       "respons body json marshal error",
 			StatusCode: 500,
 		}, nil
+	}
+
+	header := map[string]string{
+		"Content-Type":                 "application/json",
+		"Access-Control-Allow-Headers": "*",
+		"Access-Control-Allow-Origin":  "*",
+		"Access-Control-Allow-Methods": "GET",
 	}
 
 	return events.APIGatewayProxyResponse{
 		Body:       string(jsonBytes),
 		StatusCode: 200,
+		Headers:    header,
 	}, nil
 }
 
