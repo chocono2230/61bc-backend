@@ -26,6 +26,48 @@ resource "aws_api_gateway_integration" "this" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.this.invoke_arn
+  credentials             = aws_iam_role.api2lambda.arn
+}
+
+# IAM Role for API Gateway Execution Lambda
+resource "aws_iam_role" "api2lambda" {
+  name                = "${var.identifier}-apigateway-lambda-role"
+  managed_policy_arns = [aws_iam_policy.api2lambda.arn]
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "api2lambda" {
+  name = "${var.identifier}-apigateway-lambda-policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "lambda:InvokeFunction"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
 }
 
 
