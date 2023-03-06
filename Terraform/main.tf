@@ -38,3 +38,8 @@ module "lambda" {
   region     = var.region
   accountId  = var.accountId
 }
+
+module "dynamoDB" {
+  source     = "./modules/dynamoDB"
+  identifier = local.identifier
+}
