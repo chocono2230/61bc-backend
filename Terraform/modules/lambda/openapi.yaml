@@ -279,6 +279,7 @@ paths:
           in: query
           name: useridentity
           description: ユーザ認証用文字列
+          required: true
 components:
   schemas:
     Post:
