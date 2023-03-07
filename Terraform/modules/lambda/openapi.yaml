@@ -262,6 +262,13 @@ paths:
         $ref: '#/components/requestBodies/createPost'
       tags:
         - Post
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
     delete:
       summary: ''
       operationId: deletePost
@@ -280,6 +287,13 @@ paths:
           name: useridentity
           description: ユーザ認証用文字列
           required: true
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
 components:
   schemas:
     Post:
