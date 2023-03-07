@@ -2,25 +2,23 @@ openapi: 3.0.1
 x-stoplight:
   id: ty0l0m8lth33t
 info:
-  title: "${name}"
-  version: "2023-03-06T07:01:08Z"
+  title: '${name}'
+  version: '2023-03-06T07:01:08Z'
   contact:
     name: chocono2230
   description: 61bcプロジェクト用API
 paths:
   /hello:
     get:
-      security:
-        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
-        uri: "${integration_uri}"
-        credentials: "${credential_role_arn}"
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
         httpMethod: POST
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       responses:
-        "200":
+        '200':
           description: OK
       x-internal: true
       tags:
@@ -29,7 +27,7 @@ paths:
       operationId: hello
     options:
       responses:
-        "200":
+        '200':
           description: 200 response
           headers:
             Access-Control-Allow-Origin:
@@ -44,16 +42,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Empty"
+                $ref: '#/components/schemas/Empty'
       x-amazon-apigateway-integration:
         type: mock
         responses:
           default:
-            statusCode: "200"
+            statusCode: '200'
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
         requestTemplates:
           application/json: '{"statusCode":200}'
         passthroughBehavior: when_no_match
@@ -62,13 +60,66 @@ paths:
       operationId: cors
       tags:
         - Test
+  /healthcheck:
+    get:
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      responses:
+        '200':
+          description: OK
+      x-internal: true
+      tags:
+        - Test
+      description: ヘルスチェック
+      operationId: healthcheck
+    options:
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        type: mock
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestTemplates:
+          application/json: '{"statusCode":200}'
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      description: CORS/プリフライトリクエスト
+      operationId: cors
+      tags:
+        - Test
+    parameters: []
 components:
   schemas:
     Empty:
       title: Empty Schema
       type: object
   securitySchemes:
-    "${auth}":
+    '${auth}':
       type: apiKey
       name: Authorization
       in: header
@@ -76,7 +127,10 @@ components:
       x-amazon-apigateway-authorizer:
         type: cognito_user_pools
         providerARNs:
-          - "${auth_provider_arn}"
+          - '${auth_provider_arn}'
 x-internal: true
 tags:
+  - name: Post
   - name: Test
+security:
+  - '${auth}': []
