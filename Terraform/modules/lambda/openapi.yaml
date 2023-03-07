@@ -10,6 +10,8 @@ info:
 paths:
   /hello:
     get:
+      security:
+        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -62,6 +64,8 @@ paths:
         - Test
   /healthcheck:
     get:
+      security:
+        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -115,6 +119,8 @@ paths:
     parameters: []
   /posts:
     get:
+      security:
+        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -185,6 +191,8 @@ paths:
     parameters: []
   '/posts/{id}':
     get:
+      security:
+        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -250,6 +258,8 @@ paths:
         in: path
         required: true
     post:
+      security:
+        - "${auth}": []
       summary: ''
       operationId: postPost
       responses:
@@ -270,6 +280,8 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
     delete:
+      security:
+        - "${auth}": []
       summary: ''
       operationId: deletePost
       responses:
@@ -370,5 +382,3 @@ x-internal: true
 tags:
   - name: Post
   - name: Test
-security:
-  - '${auth}': []
