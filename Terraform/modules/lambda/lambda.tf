@@ -36,10 +36,10 @@ resource "null_resource" "this" {
   depends_on = [aws_s3_bucket.this]
 
   triggers = {
-    code_diff = join("", [
+    code_diff = sha256(join("", [
       for file in fileset(local.golang_codedir_local_path, "./**/*.go")
       : filebase64("${local.golang_codedir_local_path}/${file}")
-    ])
+    ]))
   }
 
   provisioner "local-exec" {
