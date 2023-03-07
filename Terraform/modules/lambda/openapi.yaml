@@ -113,8 +113,208 @@ paths:
       tags:
         - Test
     parameters: []
+  /posts:
+    get:
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                required:
+                  - posts
+      x-internal: true
+      description: 全てのPostの取得
+      operationId: postGetAll
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: userid
+          description: 特定ユーザに対して、全件取得
+      tags:
+        - Post
+    options:
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        type: mock
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestTemplates:
+          application/json: '{"statusCode":200}'
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      description: CORS/プリフライトリクエスト
+      operationId: cors
+      tags:
+        - Test
+    parameters: []
+  '/posts/{id}':
+    get:
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: '#/components/schemas/Post'
+      x-internal: true
+      description: Postの取得
+      operationId: getPost
+      parameters: []
+      tags:
+        - Post
+    options:
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        type: mock
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestTemplates:
+          application/json: '{"statusCode":200}'
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      description: CORS/プリフライトリクエスト
+      operationId: cors
+      tags:
+        - Test
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    post:
+      summary: ''
+      operationId: postPost
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+      description: Postの作成
+      requestBody:
+        $ref: '#/components/requestBodies/createPost'
+      tags:
+        - Post
+    delete:
+      summary: ''
+      operationId: deletePost
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+      description: Postの削除
+      tags:
+        - Post
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: useridentity
+          description: ユーザ認証用文字列
 components:
   schemas:
+    Post:
+      title: Post
+      x-stoplight:
+        id: a4e4rdrnzsqm1
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        timestamp:
+          type: number
+        gsiSKey:
+          type: string
+        replyId:
+          type: string
+        lastReplyId:
+          type: string
+        content:
+          type: object
+          properties:
+            comment:
+              type: string
+        reactions:
+          type: array
+          items:
+            type: object
+      required:
+        - id
+        - userId
+        - timestamp
+        - gsiSKey
+        - content
+        - reactions
     Empty:
       title: Empty Schema
       type: object
@@ -128,6 +328,29 @@ components:
         type: cognito_user_pools
         providerARNs:
           - '${auth_provider_arn}'
+  requestBodies:
+    createPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              timestamp:
+                type: string
+              replyId:
+                type: string
+              content:
+                type: object
+                properties:
+                  comment:
+                    type: string
+            required:
+              - userId
+              - timestamp
+              - content
+      description: Post作成
 x-internal: true
 tags:
   - name: Post
