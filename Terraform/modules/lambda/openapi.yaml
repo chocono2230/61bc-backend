@@ -10,8 +10,6 @@ info:
 paths:
   /hello:
     get:
-      security:
-        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -28,6 +26,7 @@ paths:
       description: 試験エンドポイント
       operationId: hello
     options:
+      security: []
       responses:
         '200':
           description: 200 response
@@ -64,8 +63,6 @@ paths:
         - Test
   /healthcheck:
     get:
-      security:
-        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -82,6 +79,7 @@ paths:
       description: ヘルスチェック
       operationId: healthcheck
     options:
+      security: []
       responses:
         '200':
           description: 200 response
@@ -119,8 +117,6 @@ paths:
     parameters: []
   /posts:
     get:
-      security:
-        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -154,6 +150,7 @@ paths:
       tags:
         - Post
     options:
+      security: []
       responses:
         '200':
           description: 200 response
@@ -191,8 +188,6 @@ paths:
     parameters: []
   '/posts/{id}':
     get:
-      security:
-        - "${auth}": []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -217,6 +212,7 @@ paths:
       tags:
         - Post
     options:
+      security: []
       responses:
         '200':
           description: 200 response
@@ -258,8 +254,6 @@ paths:
         in: path
         required: true
     post:
-      security:
-        - "${auth}": []
       summary: ''
       operationId: postPost
       responses:
@@ -280,8 +274,6 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
     delete:
-      security:
-        - "${auth}": []
       summary: ''
       operationId: deletePost
       responses:
@@ -382,3 +374,5 @@ x-internal: true
 tags:
   - name: Post
   - name: Test
+security:
+  - '${auth}': []
