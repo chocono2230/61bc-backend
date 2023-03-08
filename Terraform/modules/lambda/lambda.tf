@@ -35,7 +35,34 @@ resource "aws_iam_role" "lambda" {
   EOF
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.lambda2dynamodb.arn,
   ]
+}
+
+resource "aws_iam_policy" "lambda2dynamodb" {
+  name = "${var.identifier}-lambda-dynamodb-policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Sid": "ReadWriteTable",
+        "Effect": "Allow",
+        "Action": [
+            "dynamodb:BatchGetItem",
+            "dynamodb:GetItem",
+            "dynamodb:Query",
+            "dynamodb:Scan",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:PutItem",
+            "dynamodb:UpdateItem"
+        ],
+        "Resource": "arn:aws:dynamodb:*:*:table/${var.posts_table_name}"
+    }
+  ]
+}
+EOF
 }
 
 resource "null_resource" "this" {
