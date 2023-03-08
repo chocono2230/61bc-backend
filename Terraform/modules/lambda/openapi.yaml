@@ -58,7 +58,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       description: CORS/プリフライトリクエスト
-      operationId: cors
+      operationId: ''
       tags:
         - Test
     parameters: []
@@ -129,7 +129,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       description: CORS/プリフライトリクエスト
-      operationId: cors
+      operationId: ''
       tags:
         - Test
     parameters: []
@@ -137,8 +137,8 @@ paths:
       summary: ''
       operationId: postPost
       responses:
-        '202':
-          description: Accepted
+        '201':
+          $ref: '#/components/responses/createPost'
         '400':
           description: Bad Request
       description: Postの作成
@@ -211,7 +211,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       description: CORS/プリフライトリクエスト
-      operationId: cors
+      operationId: ''
       tags:
         - Test
     parameters:
@@ -280,7 +280,6 @@ components:
         - timestamp
         - gsiSKey
         - content
-        - reactions
     Empty:
       title: Empty Schema
       type: object
@@ -314,6 +313,13 @@ components:
               - userId
               - content
       description: Post作成
+  responses:
+    createPost:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Post'
 x-internal: true
 tags:
   - name: Post
