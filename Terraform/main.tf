@@ -32,11 +32,15 @@ locals {
 }
 
 module "lambda" {
-  source     = "./modules/lambda"
-  identifier = local.identifier
-  env        = var.env
-  region     = var.region
-  accountId  = var.accountId
+  depends_on = [
+    module.dynamoDB
+  ]
+  source           = "./modules/lambda"
+  identifier       = local.identifier
+  env              = var.env
+  region           = var.region
+  accountId        = var.accountId
+  posts_table_name = module.dynamoDB.posts_table_name
 }
 
 module "dynamoDB" {

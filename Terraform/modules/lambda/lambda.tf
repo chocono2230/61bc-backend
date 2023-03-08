@@ -7,6 +7,12 @@ resource "aws_lambda_function" "this" {
   source_code_hash = data.aws_s3_object.golang_zip_hash.body
   runtime          = "go1.x"
   timeout          = "10"
+
+  environment {
+    variables = {
+      POSTS_TABLE_NAME = var.posts_table_name
+    }
+  }
 }
 
 resource "aws_iam_role" "lambda" {
