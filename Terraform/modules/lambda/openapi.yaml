@@ -58,7 +58,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       description: CORS/プリフライトリクエスト
-      operationId: cors
+      operationId: ''
       tags:
         - Test
     parameters: []
@@ -121,7 +121,7 @@ paths:
           default:
             statusCode: '200'
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+              method.response.header.Access-Control-Allow-Methods: '''GET,POST,OPTIONS'''
               method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
               method.response.header.Access-Control-Allow-Origin: '''*'''
         requestTemplates:
@@ -129,10 +129,30 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       description: CORS/プリフライトリクエスト
-      operationId: cors
+      operationId: ''
       tags:
         - Test
     parameters: []
+    post:
+      summary: ''
+      operationId: postPost
+      responses:
+        '201':
+          $ref: '#/components/responses/createPost'
+        '400':
+          description: Bad Request
+      description: Postの作成
+      requestBody:
+        $ref: '#/components/requestBodies/createPost'
+      tags:
+        - Post
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
   '/posts/{id}':
     get:
       x-amazon-apigateway-integration:
@@ -191,7 +211,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       description: CORS/プリフライトリクエスト
-      operationId: cors
+      operationId: ''
       tags:
         - Test
     parameters:
@@ -200,26 +220,6 @@ paths:
         name: id
         in: path
         required: true
-    post:
-      summary: ''
-      operationId: postPost
-      responses:
-        '202':
-          description: Accepted
-        '400':
-          description: Bad Request
-      description: Postの作成
-      requestBody:
-        $ref: '#/components/requestBodies/createPost'
-      tags:
-        - Post
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        uri: '${integration_uri}'
-        credentials: '${credential_role_arn}'
-        httpMethod: POST
-        passthroughBehavior: when_no_match
-        timeoutInMillis: 29000
     delete:
       summary: ''
       operationId: deletePost
@@ -280,7 +280,6 @@ components:
         - timestamp
         - gsiSKey
         - content
-        - reactions
     Empty:
       title: Empty Schema
       type: object
@@ -303,8 +302,6 @@ components:
             properties:
               userId:
                 type: string
-              timestamp:
-                type: string
               replyId:
                 type: string
               content:
@@ -314,9 +311,15 @@ components:
                     type: string
             required:
               - userId
-              - timestamp
               - content
       description: Post作成
+  responses:
+    createPost:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Post'
 x-internal: true
 tags:
   - name: Post

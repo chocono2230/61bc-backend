@@ -1,5 +1,5 @@
-resource "aws_dynamodb_table" "basic-dynamodb-table" {
-  name         = "${var.identifier}-ddb-post"
+resource "aws_dynamodb_table" "posts_table" {
+  name         = "${var.identifier}-ddb-posts"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 
@@ -24,14 +24,14 @@ resource "aws_dynamodb_table" "basic-dynamodb-table" {
   }
 
   global_secondary_index {
-    name            = "${var.identifier}-ddb-post-gsi-alltime"
+    name            = "${var.identifier}-ddb-posts-gsi-alltime"
     hash_key        = "gsiSKey"
     range_key       = "timestamp"
     projection_type = "ALL"
   }
 
   global_secondary_index {
-    name            = "${var.identifier}-ddb-post-gsi-usrtime"
+    name            = "${var.identifier}-ddb-posts-gsi-usrtime"
     hash_key        = "userId"
     range_key       = "timestamp"
     projection_type = "ALL"

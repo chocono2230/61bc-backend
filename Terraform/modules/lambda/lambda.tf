@@ -7,6 +7,12 @@ resource "aws_lambda_function" "this" {
   source_code_hash = data.aws_s3_object.golang_zip_hash.body
   runtime          = "go1.x"
   timeout          = "10"
+
+  environment {
+    variables = {
+      POSTS_TABLE_NAME = var.posts_table_name
+    }
+  }
 }
 
 resource "aws_iam_role" "lambda" {
@@ -29,7 +35,34 @@ resource "aws_iam_role" "lambda" {
   EOF
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.lambda2dynamodb.arn,
   ]
+}
+
+resource "aws_iam_policy" "lambda2dynamodb" {
+  name = "${var.identifier}-lambda-dynamodb-policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Sid": "ReadWriteTable",
+        "Effect": "Allow",
+        "Action": [
+            "dynamodb:BatchGetItem",
+            "dynamodb:GetItem",
+            "dynamodb:Query",
+            "dynamodb:Scan",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:PutItem",
+            "dynamodb:UpdateItem"
+        ],
+        "Resource": "arn:aws:dynamodb:*:*:table/${var.posts_table_name}"
+    }
+  ]
+}
+EOF
 }
 
 resource "null_resource" "this" {

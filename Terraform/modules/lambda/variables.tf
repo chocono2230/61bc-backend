@@ -11,3 +11,6 @@ variable "accountId" {
   type      = string
   sensitive = true
 }
+variable "posts_table_name" {
+  type = string
+}

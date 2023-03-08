@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/chocono2230/61bc-backend/lambda/healthcheck"
+	"github.com/chocono2230/61bc-backend/lambda/posts"
 )
 
 func jsonResponse(body any, statusCode int) (events.APIGatewayProxyResponse, error) {
@@ -55,6 +56,8 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	switch pathArray[0] {
 	case "healthcheck":
 		res, statusCode, err = healthcheck.Root(request)
+	case "posts":
+		res, statusCode, err = posts.Root(request)
 	default:
 		res = "resource root is not allowed"
 		statusCode = 400
