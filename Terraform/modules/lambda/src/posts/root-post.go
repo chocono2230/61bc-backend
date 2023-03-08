@@ -2,9 +2,15 @@ package posts
 
 import (
 	"encoding/json"
-	"fmt"
+	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/google/uuid"
 )
 
 type RequestBody struct {
@@ -15,7 +21,7 @@ type RequestBody struct {
 	} `json:"content"`
 }
 
-func post(request events.APIGatewayProxyRequest) (string, int, error) {
+func post(request events.APIGatewayProxyRequest) (any, int, error) {
 	body := request.Body
 	rb := RequestBody{}
 	err := json.Unmarshal([]byte(body), &rb)
@@ -31,8 +37,55 @@ func post(request events.APIGatewayProxyRequest) (string, int, error) {
 
 	switch {
 	case rb.Content.Comment != nil && *rb.Content.Comment != "":
-		return fmt.Sprintf("comment: %s", *rb.Content.Comment), 200, nil
+		return createPost(rb)
 	default:
 		return "content is required", 400, nil
 	}
+}
+
+func createPost(requestBody RequestBody) (any, int, error) {
+	sess, err := session.NewSession()
+	if err != nil {
+		return err.Error(), 500, nil
+	}
+	db := dynamodb.New(sess)
+
+	id := uuid.New().String()
+	timestamp := time.Now().Unix()
+	var replyId *string
+	if requestBody.ReplyId != nil && *requestBody.ReplyId != "" {
+		replyId = requestBody.ReplyId
+	}
+	content := requestBody.Content
+	var gsiSKey string = "SKEY"
+	post := Post{
+		Id:        &id,
+		UserId:    requestBody.UserId,
+		Timestamp: &timestamp,
+		GsiSKey:   &gsiSKey,
+		ReplyId:   replyId,
+	}
+	if content.Comment != nil && *content.Comment != "" {
+		post.Content = &struct {
+			Comment *string `dynamodbav:"comment" json:"comment"`
+		}{
+			Comment: content.Comment,
+		}
+	}
+
+	inputAV, err := dynamodbattribute.MarshalMap(post)
+	if err != nil {
+		return err.Error(), 500, nil
+	}
+	tn := os.Getenv("POSTS_TABLE_NAME")
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String(tn),
+		Item:      inputAV,
+	}
+	_, err = db.PutItem(input)
+	if err != nil {
+		return err.Error(), 500, nil
+	}
+
+	return post, 201, nil
 }
