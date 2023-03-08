@@ -61,7 +61,8 @@ resource "null_resource" "this" {
 }
 
 resource "aws_s3_bucket" "this" {
-  bucket = "${var.identifier}-lambda-s3"
+  bucket        = "${var.identifier}-lambda-s3"
+  force_destroy = var.env == "tst" ? true : false
 }
 resource "aws_s3_bucket_acl" "this" {
   bucket = aws_s3_bucket.this.bucket
