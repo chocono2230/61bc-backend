@@ -28,13 +28,28 @@ provider "aws" {
 }
 
 locals {
-  identifier = "${var.env}-${var.project}"
+  identifier   = "${var.env}-${var.project}"
+  gsi_name_all = "${local.identifier}-ddb-posts-gsi-alltime"
+  gsi_name_usr = "${local.identifier}-ddb-posts-gsi-usrtime"
 }
 
 module "lambda" {
-  source     = "./modules/lambda"
-  identifier = local.identifier
-  env        = var.env
-  region     = var.region
-  accountId  = var.accountId
+  depends_on = [
+    module.dynamoDB
+  ]
+  source                   = "./modules/lambda"
+  identifier               = local.identifier
+  env                      = var.env
+  region                   = var.region
+  accountId                = var.accountId
+  posts_table_name         = module.dynamoDB.posts_table_name
+  posts_table_gsi_name_all = local.gsi_name_all
+  posts_table_gsi_name_usr = local.gsi_name_usr
+}
+
+module "dynamoDB" {
+  source       = "./modules/dynamoDB"
+  identifier   = local.identifier
+  gsi_name_all = local.gsi_name_all
+  gsi_name_usr = local.gsi_name_usr
 }

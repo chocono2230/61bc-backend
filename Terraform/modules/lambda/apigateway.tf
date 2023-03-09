@@ -1,102 +1,80 @@
 resource "aws_api_gateway_rest_api" "this" {
   name = "${var.identifier}-apigateway"
+  body = data.template_file.openapi.rendered
+
   endpoint_configuration {
     types = ["REGIONAL"]
   }
 }
 
-resource "aws_api_gateway_resource" "this" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
-  path_part   = "hello"
-}
+data "template_file" "openapi" {
+  template = file("${path.module}/openapi.yaml")
 
-resource "aws_api_gateway_method" "this" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.this.id
-  http_method   = "GET"
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = aws_api_gateway_authorizer.this.id
-}
-
-resource "aws_api_gateway_integration" "this" {
-  rest_api_id             = aws_api_gateway_rest_api.this.id
-  resource_id             = aws_api_gateway_resource.this.id
-  http_method             = aws_api_gateway_method.this.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.this.invoke_arn
-}
-
-
-# CORS
-resource "aws_api_gateway_method" "option" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.this.id
-  http_method   = "OPTIONS"
-  authorization = "NONE"
-}
-
-resource "aws_api_gateway_method_response" "option" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  resource_id = aws_api_gateway_resource.this.id
-  http_method = aws_api_gateway_method.option.http_method
-  status_code = "200"
-  response_models = {
-    "application/json" = "Empty"
-  }
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
-    "method.response.header.Access-Control-Allow-Origin"  = true
+  vars = {
+    name                = "${var.identifier}-apigateway"
+    auth                = "${var.identifier}-apigateway-auth"
+    auth_provider_arn   = aws_cognito_user_pool.this.arn
+    integration_uri     = aws_lambda_function.this.invoke_arn
+    credential_role_arn = aws_iam_role.api2lambda.arn
   }
 }
 
-resource "aws_api_gateway_integration" "option" {
-  rest_api_id          = aws_api_gateway_rest_api.this.id
-  resource_id          = aws_api_gateway_resource.this.id
-  http_method          = aws_api_gateway_method.option.http_method
-  type                 = "MOCK"
-  passthrough_behavior = "WHEN_NO_MATCH"
-  request_templates = {
-    "application/json" = jsonencode(
-      {
-        statusCode = 200
-      }
-    )
-  }
+# IAM Role for API Gateway Execution Lambda
+resource "aws_iam_role" "api2lambda" {
+  name                = "${var.identifier}-apigateway-lambda-role"
+  managed_policy_arns = [aws_iam_policy.api2lambda.arn]
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 }
 
-resource "aws_api_gateway_integration_response" "option" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  resource_id = aws_api_gateway_resource.this.id
-  http_method = aws_api_gateway_method.option.http_method
-  status_code = aws_api_gateway_method_response.option.status_code
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
+resource "aws_iam_policy" "api2lambda" {
+  name = "${var.identifier}-apigateway-lambda-policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "lambda:InvokeFunction"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
 }
 
 # deploy
 resource "aws_api_gateway_deployment" "this" {
+  depends_on = [
+    aws_api_gateway_rest_api.this
+  ]
+
   rest_api_id = aws_api_gateway_rest_api.this.id
 
   triggers = {
-    redeployment = join("", [
-      for file in fileset(path.module, "./**/*.tf")
-      : filebase64("${path.module}/${file}")
-    ])
+    redeployment = sha256(file("${path.module}/openapi.yaml"))
   }
 
   lifecycle {
     create_before_destroy = true
   }
-
-  depends_on = [
-    aws_api_gateway_integration.this
-  ]
 }
 
 resource "aws_api_gateway_stage" "this" {
@@ -141,7 +119,7 @@ resource "aws_lambda_permission" "this" {
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.this.id}/${var.env}/${aws_api_gateway_method.this.http_method}${aws_api_gateway_resource.this.path}"
+  source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.this.id}/${var.env}/*"
 }
 
 # IAM Role for API Gateway Put CloudWatch Logs
@@ -165,14 +143,5 @@ resource "aws_iam_role" "apigateway_putlog" {
 EOF
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
-  ]
-}
-
-resource "aws_api_gateway_authorizer" "this" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  name        = "${var.identifier}-apigateway-auth"
-  type        = "COGNITO_USER_POOLS"
-  provider_arns = [
-    aws_cognito_user_pool.this.arn
   ]
 }

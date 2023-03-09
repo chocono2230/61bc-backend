@@ -7,6 +7,14 @@ resource "aws_lambda_function" "this" {
   source_code_hash = data.aws_s3_object.golang_zip_hash.body
   runtime          = "go1.x"
   timeout          = "10"
+
+  environment {
+    variables = {
+      POSTS_TABLE_NAME         = var.posts_table_name
+      POSTS_TABLE_GSI_NAME_ALL = var.posts_table_gsi_name_all
+      POSTS_TABLE_GSI_NAME_USR = var.posts_table_gsi_name_usr
+    }
+  }
 }
 
 resource "aws_iam_role" "lambda" {
@@ -29,17 +37,47 @@ resource "aws_iam_role" "lambda" {
   EOF
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.lambda2dynamodb.arn,
   ]
+}
+
+resource "aws_iam_policy" "lambda2dynamodb" {
+  name = "${var.identifier}-lambda-dynamodb-policy"
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+          "Sid": "ReadWriteTable",
+          "Effect": "Allow",
+          "Action": [
+              "dynamodb:BatchGetItem",
+              "dynamodb:GetItem",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:BatchWriteItem",
+              "dynamodb:PutItem",
+              "dynamodb:UpdateItem"
+          ],
+          "Resource": [
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}",
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_all}"
+          ]
+      }
+    ]
+  }
+  EOF
 }
 
 resource "null_resource" "this" {
   depends_on = [aws_s3_bucket.this]
 
   triggers = {
-    code_diff = join("", [
+    code_diff = sha256(join("", [
       for file in fileset(local.golang_codedir_local_path, "./**/*.go")
       : filebase64("${local.golang_codedir_local_path}/${file}")
-    ])
+    ]))
   }
 
   provisioner "local-exec" {
@@ -61,7 +99,8 @@ resource "null_resource" "this" {
 }
 
 resource "aws_s3_bucket" "this" {
-  bucket = "${var.identifier}-lambda-s3"
+  bucket        = "${var.identifier}-lambda-s3"
+  force_destroy = var.env == "tst" ? true : false
 }
 resource "aws_s3_bucket_acl" "this" {
   bucket = aws_s3_bucket.this.bucket

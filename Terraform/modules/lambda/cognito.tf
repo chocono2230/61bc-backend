@@ -6,7 +6,7 @@ resource "aws_cognito_user_pool" "this" {
   auto_verified_attributes = [
     "email",
   ]
-  deletion_protection = "ACTIVE"
+  deletion_protection = var.env == "tst" ? "INACTIVE" : "ACTIVE"
   mfa_configuration   = "OFF"
 
   account_recovery_setting {
