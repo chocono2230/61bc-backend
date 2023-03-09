@@ -2,6 +2,7 @@ package posts
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -26,27 +27,27 @@ func post(request events.APIGatewayProxyRequest) (any, int, error) {
 	rb := RequestBody{}
 	err := json.Unmarshal([]byte(body), &rb)
 	if err != nil {
-		return "request body json unmarshal error", 400, nil
+		return nil, 400, fmt.Errorf("request body json unmarshal error")
 	}
 	if rb.UserId == nil || *rb.UserId == "" {
-		return "user id is required", 400, nil
+		return nil, 400, fmt.Errorf("user id is required")
 	}
 	if rb.Content == nil {
-		return "content is required", 400, nil
+		return nil, 400, fmt.Errorf("content is required")
 	}
 
 	switch {
 	case rb.Content.Comment != nil && *rb.Content.Comment != "":
 		return createPost(rb)
 	default:
-		return "content is required", 400, nil
+		return nil, 400, fmt.Errorf("content is required")
 	}
 }
 
 func createPost(requestBody RequestBody) (any, int, error) {
 	sess, err := session.NewSession()
 	if err != nil {
-		return err.Error(), 500, nil
+		return nil, 500, err
 	}
 	db := dynamodb.New(sess)
 
@@ -75,7 +76,7 @@ func createPost(requestBody RequestBody) (any, int, error) {
 
 	inputAV, err := dynamodbattribute.MarshalMap(post)
 	if err != nil {
-		return err.Error(), 500, nil
+		return nil, 500, err
 	}
 	tn := os.Getenv("POSTS_TABLE_NAME")
 	input := &dynamodb.PutItemInput{
@@ -84,7 +85,7 @@ func createPost(requestBody RequestBody) (any, int, error) {
 	}
 	_, err = db.PutItem(input)
 	if err != nil {
-		return err.Error(), 500, nil
+		return nil, 500, err
 	}
 
 	return post, 201, nil

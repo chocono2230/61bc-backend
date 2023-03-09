@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -15,7 +16,7 @@ func get(request events.APIGatewayProxyRequest) (any, int, error) {
 
 	switch {
 	case uid != "":
-		return "that feature has not been implemented", 400, nil
+		return nil, 400, fmt.Errorf("that feature has not been implemented")
 	default:
 		return getAllPost()
 	}
@@ -24,7 +25,7 @@ func get(request events.APIGatewayProxyRequest) (any, int, error) {
 func getAllPost() (any, int, error) {
 	sess, err := session.NewSession()
 	if err != nil {
-		return err.Error(), 500, nil
+		return nil, 500, err
 	}
 	db := dynamodb.New(sess)
 
@@ -46,13 +47,13 @@ func getAllPost() (any, int, error) {
 	}
 	result, err := db.Query(input)
 	if err != nil {
-		return err.Error(), 500, nil
+		return nil, 500, err
 	}
 
 	posts := []Post{}
 	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &posts)
 	if err != nil {
-		return err.Error(), 500, nil
+		return nil, 500, err
 	}
 	response := struct {
 		Posts []Post `json:"posts"`
