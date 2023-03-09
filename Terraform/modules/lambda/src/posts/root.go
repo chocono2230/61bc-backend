@@ -19,6 +19,8 @@ func Root(request events.APIGatewayProxyRequest) (any, int, error) {
 	if len(pathArray) == 0 {
 		method := request.HTTPMethod
 		switch method {
+		case "GET":
+			return get(request)
 		case "POST":
 			return post(request)
 		}

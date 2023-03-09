@@ -24,14 +24,14 @@ resource "aws_dynamodb_table" "posts_table" {
   }
 
   global_secondary_index {
-    name            = "${var.identifier}-ddb-posts-gsi-alltime"
+    name            = var.gsi_name_all
     hash_key        = "gsiSKey"
     range_key       = "timestamp"
     projection_type = "ALL"
   }
 
   global_secondary_index {
-    name            = "${var.identifier}-ddb-posts-gsi-usrtime"
+    name            = var.gsi_name_usr
     hash_key        = "userId"
     range_key       = "timestamp"
     projection_type = "ALL"

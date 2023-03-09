@@ -10,7 +10,9 @@ resource "aws_lambda_function" "this" {
 
   environment {
     variables = {
-      POSTS_TABLE_NAME = var.posts_table_name
+      POSTS_TABLE_NAME         = var.posts_table_name
+      POSTS_TABLE_GSI_NAME_ALL = var.posts_table_gsi_name_all
+      POSTS_TABLE_GSI_NAME_USR = var.posts_table_gsi_name_usr
     }
   }
 }
@@ -42,27 +44,30 @@ resource "aws_iam_role" "lambda" {
 resource "aws_iam_policy" "lambda2dynamodb" {
   name = "${var.identifier}-lambda-dynamodb-policy"
 
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-        "Sid": "ReadWriteTable",
-        "Effect": "Allow",
-        "Action": [
-            "dynamodb:BatchGetItem",
-            "dynamodb:GetItem",
-            "dynamodb:Query",
-            "dynamodb:Scan",
-            "dynamodb:BatchWriteItem",
-            "dynamodb:PutItem",
-            "dynamodb:UpdateItem"
-        ],
-        "Resource": "arn:aws:dynamodb:*:*:table/${var.posts_table_name}"
-    }
-  ]
-}
-EOF
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+          "Sid": "ReadWriteTable",
+          "Effect": "Allow",
+          "Action": [
+              "dynamodb:BatchGetItem",
+              "dynamodb:GetItem",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:BatchWriteItem",
+              "dynamodb:PutItem",
+              "dynamodb:UpdateItem"
+          ],
+          "Resource": [
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}",
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_all}"
+          ]
+      }
+    ]
+  }
+  EOF
 }
 
 resource "null_resource" "this" {
