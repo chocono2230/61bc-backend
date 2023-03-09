@@ -10,7 +10,9 @@ resource "aws_lambda_function" "this" {
 
   environment {
     variables = {
-      POSTS_TABLE_NAME = var.posts_table_name
+      POSTS_TABLE_NAME         = var.posts_table_name
+      POSTS_TABLE_GSI_NAME_ALL = var.posts_table_gsi_name_all
+      POSTS_TABLE_GSI_NAME_USR = var.posts_table_gsi_name_usr
     }
   }
 }
