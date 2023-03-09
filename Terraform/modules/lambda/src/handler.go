@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -10,7 +11,7 @@ import (
 	"github.com/chocono2230/61bc-backend/lambda/posts"
 )
 
-func jsonResponse(body any, statusCode int) (events.APIGatewayProxyResponse, error) {
+func jsonResponse(body any, statusCode int, err error) (events.APIGatewayProxyResponse, error) {
 	header := map[string]string{
 		"Content-Type":                 "application/json",
 		"Access-Control-Allow-Headers": "*",
@@ -18,28 +19,32 @@ func jsonResponse(body any, statusCode int) (events.APIGatewayProxyResponse, err
 		"Access-Control-Allow-Methods": "*",
 	}
 
-	jsonBytes, err := json.Marshal(body)
 	if err != nil {
-		jsonBytes, err := json.Marshal("respons body json marshal error")
-		if err != nil {
+		body = err.Error()
+	}
+
+	jsonBytes, err2 := json.Marshal(body)
+	if err2 != nil {
+		jsonBytes, err3 := json.Marshal("respons body json marshal error")
+		if err3 != nil {
 			return events.APIGatewayProxyResponse{
 				Body:       "respons body json marshal error",
 				StatusCode: 500,
 				Headers:    header,
-			}, nil
+			}, err3
 		}
 		return events.APIGatewayProxyResponse{
 			Body:       string(jsonBytes),
 			StatusCode: 500,
 			Headers:    header,
-		}, nil
+		}, err2
 	}
 
 	return events.APIGatewayProxyResponse{
 		Body:       string(jsonBytes),
 		StatusCode: statusCode,
 		Headers:    header,
-	}, nil
+	}, err
 }
 
 func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -47,7 +52,7 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	trm := strings.Trim(path, "/")
 	pathArray := strings.Split(trm, "/")
 	if len(pathArray) < 1 {
-		return jsonResponse("root path is not allowed", 400)
+		return jsonResponse(nil, 400, fmt.Errorf("root path is not allowed"))
 	}
 
 	var res any
@@ -59,13 +64,10 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	case "posts":
 		res, statusCode, err = posts.Root(request)
 	default:
-		res = "resource root is not allowed"
+		err = fmt.Errorf("resource root is not allowed")
 		statusCode = 400
 	}
-	if err != nil {
-		res = err.Error()
-	}
-	return jsonResponse(res, statusCode)
+	return jsonResponse(res, statusCode, err)
 }
 
 func main() {
