@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 func get(request events.APIGatewayProxyRequest) (any, int, error) {
@@ -48,5 +49,15 @@ func getAllPost() (any, int, error) {
 		return err.Error(), 500, nil
 	}
 
-	return result, 200, nil
+	posts := []Post{}
+	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &posts)
+	if err != nil {
+		return err.Error(), 500, nil
+	}
+	response := struct {
+		Posts []Post `json:"posts"`
+	}{
+		Posts: posts,
+	}
+	return response, 200, nil
 }
