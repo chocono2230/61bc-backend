@@ -28,9 +28,10 @@ provider "aws" {
 }
 
 locals {
-  identifier   = "${var.env}-${var.project}"
-  gsi_name_all = "${local.identifier}-ddb-posts-gsi-alltime"
-  gsi_name_usr = "${local.identifier}-ddb-posts-gsi-usrtime"
+  identifier        = "${var.env}-${var.project}"
+  gsi_name_all      = "${local.identifier}-ddb-posts-gsi-alltime"
+  gsi_name_usr      = "${local.identifier}-ddb-posts-gsi-usrtime"
+  gsi_name_identity = "${local.identifier}-ddb-users-gsi-identity"
 }
 
 module "lambda" {
@@ -48,8 +49,9 @@ module "lambda" {
 }
 
 module "dynamoDB" {
-  source       = "./modules/dynamoDB"
-  identifier   = local.identifier
-  gsi_name_all = local.gsi_name_all
-  gsi_name_usr = local.gsi_name_usr
+  source            = "./modules/dynamoDB"
+  identifier        = local.identifier
+  gsi_name_all      = local.gsi_name_all
+  gsi_name_usr      = local.gsi_name_usr
+  gsi_name_identity = local.gsi_name_identity
 }
