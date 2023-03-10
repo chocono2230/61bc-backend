@@ -64,7 +64,9 @@ resource "aws_iam_policy" "lambda2dynamodb" {
           ],
           "Resource": [
             "arn:aws:dynamodb:*:*:table/${var.posts_table_name}",
-            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_all}"
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_all}",
+            "arn:aws:dynamodb:*:*:table/${var.users_table_name}",
+            "arn:aws:dynamodb:*:*:table/${var.users_table_name}/index/${var.users_table_gsi_name_identity}"
           ]
       }
     ]
