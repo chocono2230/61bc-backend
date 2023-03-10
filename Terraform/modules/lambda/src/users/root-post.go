@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
@@ -21,69 +20,50 @@ type CreateUserRequest struct {
 
 func post(request events.APIGatewayProxyRequest) (any, int, error) {
 	body := request.Body
-	rb := CreateUserRequest{}
-	err := json.Unmarshal([]byte(body), &rb)
+	cr := CreateUserRequest{}
+	err := json.Unmarshal([]byte(body), &cr)
 	if err != nil {
 		return nil, 400, fmt.Errorf("request body json unmarshal error")
 	}
-	if rb.UserId == nil || *rb.UserId == "" {
-		return nil, 400, fmt.Errorf("user id is required")
-	}
-	if rb.Content == nil {
-		return nil, 400, fmt.Errorf("content is required")
+	if cr.DisplayName == nil || cr.Identity == nil || *cr.DisplayName == "" || *cr.Identity == "" {
+		return nil, 400, fmt.Errorf("displayName and identity are required")
 	}
 
-	switch {
-	case rb.Content.Comment != nil && *rb.Content.Comment != "":
-		return createPost(rb)
-	default:
-		return nil, 400, fmt.Errorf("content is required")
-	}
+	return createUser(cr)
 }
 
-func createPost(requestBody RequestBody) (any, int, error) {
+func createUser(cr CreateUserRequest) (any, int, error) {
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, 500, err
 	}
 	db := dynamodb.New(sess)
+	tableName := os.Getenv("USERS_TABLE_NAME")
 
 	id := uuid.New().String()
-	timestamp := time.Now().Unix()
-	var replyId *string
-	if requestBody.ReplyId != nil && *requestBody.ReplyId != "" {
-		replyId = requestBody.ReplyId
-	}
-	content := requestBody.Content
-	var gsiSKey string = "SKEY"
-	post := Post{
-		Id:        &id,
-		UserId:    requestBody.UserId,
-		Timestamp: &timestamp,
-		GsiSKey:   &gsiSKey,
-		ReplyId:   replyId,
-	}
-	if content.Comment != nil && *content.Comment != "" {
-		post.Content = &struct {
-			Comment *string `dynamodbav:"comment" json:"comment"`
-		}{
-			Comment: content.Comment,
-		}
+	user := User{
+		Id:          &id,
+		DisplayName: cr.DisplayName,
+		Identity:    cr.Identity,
 	}
 
-	inputAV, err := dynamodbattribute.MarshalMap(post)
+	iav, err := dynamodbattribute.MarshalMap(user)
 	if err != nil {
 		return nil, 500, err
 	}
-	tn := os.Getenv("POSTS_TABLE_NAME")
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String(tn),
-		Item:      inputAV,
+		TableName: aws.String(tableName),
+		Item:      iav,
 	}
 	_, err = db.PutItem(input)
 	if err != nil {
 		return nil, 500, err
 	}
 
-	return post, 201, nil
+	rs := struct {
+		User User `json:"user"`
+	}{
+		User: user,
+	}
+	return rs, 201, nil
 }
