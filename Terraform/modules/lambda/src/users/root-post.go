@@ -33,12 +33,24 @@ func post(request events.APIGatewayProxyRequest) (any, int, error) {
 }
 
 func createUser(cr CreateUserRequest) (any, int, error) {
+	fu, st, err := getUserFromIdentity(*cr.Identity)
+	if st == 200 {
+		rs := struct {
+			User User `json:"user"`
+		}{
+			User: *fu,
+		}
+		return rs, 200, nil
+	}
+	if st != 404 {
+		return nil, st, err
+	}
+
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, 500, err
 	}
 	db := dynamodb.New(sess)
-	tableName := os.Getenv("USERS_TABLE_NAME")
 
 	id := uuid.New().String()
 	user := User{
@@ -51,8 +63,10 @@ func createUser(cr CreateUserRequest) (any, int, error) {
 	if err != nil {
 		return nil, 500, err
 	}
+
+	tn := os.Getenv("USERS_TABLE_NAME")
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(tn),
 		Item:      iav,
 	}
 	_, err = db.PutItem(input)
@@ -66,4 +80,42 @@ func createUser(cr CreateUserRequest) (any, int, error) {
 		User: user,
 	}
 	return rs, 201, nil
+}
+
+func getUserFromIdentity(identity string) (*User, int, error) {
+	sess, err := session.NewSession()
+	if err != nil {
+		return nil, 500, err
+	}
+	db := dynamodb.New(sess)
+
+	tn := os.Getenv("USERS_TABLE_NAME")
+	in := os.Getenv("USERS_TABLE_GSI_NAME_IDENTITY")
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String(tn),
+		IndexName:              aws.String(in),
+		KeyConditionExpression: aws.String("identity = :identity"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":identity": {
+				S: aws.String(identity),
+			},
+		},
+	}
+
+	output, err := db.Query(input)
+	if err != nil {
+		return nil, 500, err
+	}
+
+	if len(output.Items) == 0 {
+		return nil, 404, fmt.Errorf("user not found")
+	}
+
+	user := User{}
+	err = dynamodbattribute.UnmarshalMap(output.Items[0], &user)
+	if err != nil {
+		return nil, 500, err
+	}
+
+	return &user, 200, nil
 }
