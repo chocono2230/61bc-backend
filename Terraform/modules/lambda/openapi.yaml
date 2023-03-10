@@ -258,7 +258,7 @@ paths:
       operationId: getAllUsers
       parameters: []
       tags:
-        - Post
+        - User
     options:
       security: []
       responses:
@@ -300,6 +300,8 @@ paths:
       summary: ''
       operationId: postUser
       responses:
+        '200':
+          $ref: '#/components/responses/createUser'
         '201':
           $ref: '#/components/responses/createUser'
         '400':
@@ -307,8 +309,6 @@ paths:
       description: Userの作成
       requestBody:
         $ref: '#/components/requestBodies/createUser'
-      tags:
-        - Post
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -316,6 +316,8 @@ paths:
         httpMethod: POST
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
+      tags:
+        - User
   '/users/{id}':
     parameters:
       - schema:
@@ -339,7 +341,7 @@ paths:
       operationId: getUser
       parameters: []
       tags:
-        - Post
+        - User
     options:
       security: []
       responses:
@@ -380,7 +382,7 @@ paths:
       summary: ''
       operationId: putUser
       responses:
-        '204':
+        '201':
           $ref: '#/components/responses/putUser'
       description: Userの更新
       parameters: []
@@ -393,6 +395,8 @@ paths:
         timeoutInMillis: 29000
       requestBody:
         $ref: '#/components/requestBodies/putUser'
+      tags:
+        - User
 components:
   schemas:
     Post:
@@ -583,5 +587,6 @@ x-internal: true
 tags:
   - name: Post
   - name: Test
+  - name: User
 security:
   - '${auth}': []
