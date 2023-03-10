@@ -92,14 +92,17 @@ func getUserFromIdentity(identity string) (*User, int, error) {
 	tn := os.Getenv("USERS_TABLE_NAME")
 	in := os.Getenv("USERS_TABLE_GSI_NAME_IDENTITY")
 	input := &dynamodb.QueryInput{
-		TableName:              aws.String(tn),
-		IndexName:              aws.String(in),
-		KeyConditionExpression: aws.String("identity = :identity"),
+		TableName: aws.String(tn),
+		IndexName: aws.String(in),
+		ExpressionAttributeNames: map[string]*string{
+			"#identity": aws.String("identity"),
+		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":identity": {
 				S: aws.String(identity),
 			},
 		},
+		KeyConditionExpression: aws.String("#identity = :identity"),
 	}
 
 	output, err := db.Query(input)
