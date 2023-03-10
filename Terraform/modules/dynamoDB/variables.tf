@@ -7,3 +7,6 @@ variable "gsi_name_all" {
 variable "gsi_name_usr" {
   type = string
 }
+variable "gsi_name_identity" {
+  type = string
+}

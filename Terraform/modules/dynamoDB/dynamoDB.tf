@@ -38,3 +38,26 @@ resource "aws_dynamodb_table" "posts_table" {
   }
 
 }
+
+resource "aws_dynamodb_table" "users_table" {
+  name         = "${var.identifier}-ddb-users"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  attribute {
+    name = "identity"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = var.gsi_name_identity
+    hash_key        = "identity"
+    projection_type = "ALL"
+  }
+
+}
