@@ -38,14 +38,16 @@ module "lambda" {
   depends_on = [
     module.dynamoDB
   ]
-  source                   = "./modules/lambda"
-  identifier               = local.identifier
-  env                      = var.env
-  region                   = var.region
-  accountId                = var.accountId
-  posts_table_name         = module.dynamoDB.posts_table_name
-  posts_table_gsi_name_all = local.gsi_name_all
-  posts_table_gsi_name_usr = local.gsi_name_usr
+  source                        = "./modules/lambda"
+  identifier                    = local.identifier
+  env                           = var.env
+  region                        = var.region
+  accountId                     = var.accountId
+  posts_table_name              = module.dynamoDB.posts_table_name
+  posts_table_gsi_name_all      = local.gsi_name_all
+  posts_table_gsi_name_usr      = local.gsi_name_usr
+  users_table_name              = module.dynamoDB.users_table_name
+  users_table_gsi_name_identity = local.gsi_name_identity
 }
 
 module "dynamoDB" {
