@@ -20,7 +20,7 @@ func pidGet(request events.APIGatewayProxyRequest) (any, int, error) {
 	return getPost(id)
 }
 
-func getPost(id string) (any, int, error) {
+func internalGetPost(id string) (*Post, int, error) {
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, 500, err
@@ -49,10 +49,18 @@ func getPost(id string) (any, int, error) {
 	if post.Id == nil {
 		return nil, 404, fmt.Errorf("post not found")
 	}
+	return &post, 200, nil
+}
+
+func getPost(id string) (any, int, error) {
+	post, status, err := internalGetPost(id)
+	if err != nil || post == nil {
+		return nil, status, err
+	}
 	response := struct {
 		Post Post `json:"post"`
 	}{
-		Post: post,
+		Post: *post,
 	}
 	return response, 200, nil
 }
