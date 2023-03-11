@@ -33,11 +33,8 @@ func Root(request events.APIGatewayProxyRequest) (any, int, error) {
 		if len(pathArray) == 0 {
 			method := request.HTTPMethod
 			switch method {
-<<<<<<< HEAD
 			case "GET":
 				return pidGet(request)
-=======
->>>>>>> 544a4028a244c8996a037dad6540e14b18376f5e
 			case "DELETE":
 				return pidDelete(request)
 			}
