@@ -526,9 +526,12 @@ components:
           schema:
             type: object
             properties:
+              userId:
+                type: string
               identity:
                 type: string
             required:
+              - userId
               - identity
   responses:
     createPost:
