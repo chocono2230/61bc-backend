@@ -240,7 +240,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       requestBody:
-        $ref: '#/components/requestBodies/deleteUser'
+        $ref: '#/components/requestBodies/deletePost'
   /users:
     get:
       x-amazon-apigateway-integration:
@@ -522,7 +522,7 @@ components:
             required:
               - id
               - identity
-    deleteUser:
+    deletePost:
       content:
         application/json:
           schema:
