@@ -60,7 +60,8 @@ resource "aws_iam_policy" "lambda2dynamodb" {
               "dynamodb:Scan",
               "dynamodb:BatchWriteItem",
               "dynamodb:PutItem",
-              "dynamodb:UpdateItem"
+              "dynamodb:UpdateItem",
+              "dynamodb:DeleteItem"
           ],
           "Resource": [
             "arn:aws:dynamodb:*:*:table/${var.posts_table_name}",
