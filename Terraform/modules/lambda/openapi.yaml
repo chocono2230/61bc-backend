@@ -20,7 +20,7 @@ paths:
       responses:
         '200':
           description: OK
-      x-internal: true
+      x-internal: false
       tags:
         - Test
       description: ヘルスチェック
@@ -85,7 +85,7 @@ paths:
                       $ref: '#/components/schemas/Post'
                 required:
                   - posts
-      x-internal: true
+      x-internal: false
       description: 全てのPostの取得
       operationId: postGetAll
       parameters:
@@ -172,7 +172,7 @@ paths:
                 properties:
                   post:
                     $ref: '#/components/schemas/Post'
-      x-internal: true
+      x-internal: false
       description: Postの取得
       operationId: getPost
       parameters: []
@@ -240,7 +240,7 @@ paths:
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
       requestBody:
-        $ref: '#/components/requestBodies/deleteUser'
+        $ref: '#/components/requestBodies/deletePost'
   /users:
     get:
       x-amazon-apigateway-integration:
@@ -522,7 +522,7 @@ components:
             required:
               - id
               - identity
-    deleteUser:
+    deletePost:
       content:
         application/json:
           schema:
