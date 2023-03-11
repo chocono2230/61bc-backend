@@ -56,7 +56,7 @@ func UserVerification(id string, identity string) (any, int, error) {
 	}
 
 	if user.Identity == nil || *user.Identity != identity {
-		return nil, 401, fmt.Errorf("fail to verify user")
+		return nil, 401, fmt.Errorf("user verification failed")
 	}
 
 	return "OK", 200, nil
