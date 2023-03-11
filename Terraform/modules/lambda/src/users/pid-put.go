@@ -55,8 +55,8 @@ func updateUser(ur UpdateUserRequest) (any, int, error) {
 	}
 	tn := os.Getenv("USERS_TABLE_NAME")
 	input := &dynamodb.PutItemInput{
-		Item:      av,
 		TableName: aws.String(tn),
+		Item:      av,
 	}
 	_, err = db.PutItem(input)
 	if err != nil {
