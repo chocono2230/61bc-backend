@@ -5,3 +5,8 @@ type User struct {
 	DisplayName *string `dynamodbav:"displayName" json:"displayName"`
 	Identity    *string `dynamodbav:"identity" json:"identity"`
 }
+
+type PublicUser struct {
+	Id          *string `dynamodbav:"id" json:"id"`
+	DisplayName *string `dynamodbav:"displayName" json:"displayName"`
+}
