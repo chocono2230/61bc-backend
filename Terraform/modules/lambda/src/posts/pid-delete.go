@@ -9,10 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/chocono2230/61bc-backend/lambda/users"
 )
 
 type DeletePostRequest = struct {
+	UserId   *string `json:"userId"`
 	Identity *string `json:"identity"`
 }
 
@@ -24,20 +25,24 @@ func pidDelete(request events.APIGatewayProxyRequest) (any, int, error) {
 		return nil, 400, fmt.Errorf("request body json unmarshal error")
 	}
 	id := request.PathParameters["id"]
-	if dr.Identity == nil || id == "" || *dr.Identity == "" {
-		return nil, 400, fmt.Errorf("id and identity are required")
+	if dr.Identity == nil || dr.UserId == nil || id == "" {
+		return nil, 400, fmt.Errorf("id, userId and identity are required")
 	}
 
 	return deletePost(id, dr)
 }
 
 func deletePost(id string, dr DeletePostRequest) (any, int, error) {
-	fu, st, err := getUserFromId(id)
-	if err != nil {
+	ps, st, err := internalGetPost(id)
+	if err != nil || ps == nil {
 		return nil, st, err
 	}
-	if *fu.Identity != *ur.Identity {
-		return nil, 400, fmt.Errorf("identity cannot be changed")
+	if *ps.UserId != *dr.UserId {
+		return nil, 400, fmt.Errorf("user id is not matched")
+	}
+	_, st, err = users.UserVerification(*dr.UserId, *dr.Identity)
+	if err != nil {
+		return nil, st, err
 	}
 
 	sess, err := session.NewSession()
@@ -46,29 +51,19 @@ func deletePost(id string, dr DeletePostRequest) (any, int, error) {
 	}
 	db := dynamodb.New(sess)
 
-	user := User{
-		Id:          &id,
-		DisplayName: ur.DisplayName,
-		Identity:    ur.Identity,
+	tn := os.Getenv("POSTS_TABLE_NAME")
+	input := &dynamodb.DeleteItemInput{
+		TableName: aws.String(tn),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {
+				S: aws.String(id),
+			},
+		},
+	}
+	_, err = db.DeleteItem(input)
+	if err != nil {
+		return nil, 500, err
 	}
 
-	av, err := dynamodbattribute.MarshalMap(user)
-	if err != nil {
-		return nil, 500, err
-	}
-	tn := os.Getenv("USERS_TABLE_NAME")
-	input := &dynamodb.PutItemInput{
-		TableName: aws.String(tn),
-		Item:      av,
-	}
-	_, err = db.PutItem(input)
-	if err != nil {
-		return nil, 500, err
-	}
-	rs := struct {
-		User User `json:"user"`
-	}{
-		User: user,
-	}
-	return rs, 200, nil
+	return nil, 204, nil
 }
