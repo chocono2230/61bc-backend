@@ -28,7 +28,7 @@ func getAllUser() (any, int, error) {
 			"#id":          aws.String("id"),
 			"#displayName": aws.String("displayName"),
 		},
-		ProjectionExpression: aws.String("id, #displayName"),
+		ProjectionExpression: aws.String("#id, #displayName"),
 	}
 	result, err := db.Scan(input)
 	if err != nil {
