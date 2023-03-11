@@ -384,7 +384,7 @@ paths:
       responses:
         '201':
           $ref: '#/components/responses/putUser'
-      description: Userの更新
+      description: Userの更新(全体)
       parameters: []
       x-amazon-apigateway-integration:
         type: aws_proxy
@@ -511,17 +511,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              id:
-                type: string
-              displayName:
-                type: string
-              identity:
-                type: string
-            required:
-              - id
-              - identity
+            $ref: '#/components/schemas/User'
     deletePost:
       content:
         application/json:
