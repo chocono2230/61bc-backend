@@ -12,7 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type UpdateUserRequest = User
+type UpdateUserRequest = struct {
+	DisplayName *string `json:"displayName"`
+	Identity    *string `json:"identity"`
+}
 
 func pidPut(request events.APIGatewayProxyRequest) (any, int, error) {
 	body := request.Body
@@ -21,15 +24,16 @@ func pidPut(request events.APIGatewayProxyRequest) (any, int, error) {
 	if err != nil {
 		return nil, 400, fmt.Errorf("request body json unmarshal error")
 	}
-	if ur.Id == nil || ur.DisplayName == nil || ur.Identity == nil || *ur.DisplayName == "" || *ur.Id == "" || *ur.Identity == "" {
+	id := request.PathParameters["id"]
+	if ur.DisplayName == nil || ur.Identity == nil || *ur.DisplayName == "" || id == "" || *ur.Identity == "" {
 		return nil, 400, fmt.Errorf("id, displayName and identity are required")
 	}
 
-	return updateUser(ur)
+	return updateUser(id, ur)
 }
 
-func updateUser(ur UpdateUserRequest) (any, int, error) {
-	fu, st, err := getUserFromId(*ur.Id)
+func updateUser(id string, ur UpdateUserRequest) (any, int, error) {
+	fu, st, err := getUserFromId(id)
 	if err != nil {
 		return nil, st, err
 	}
@@ -44,7 +48,7 @@ func updateUser(ur UpdateUserRequest) (any, int, error) {
 	db := dynamodb.New(sess)
 
 	user := User{
-		Id:          ur.Id,
+		Id:          &id,
 		DisplayName: ur.DisplayName,
 		Identity:    ur.Identity,
 	}

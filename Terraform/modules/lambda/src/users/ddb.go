@@ -18,10 +18,8 @@ func getUserFromId(id string) (*User, int, error) {
 	db := dynamodb.New(sess)
 
 	tn := os.Getenv("USERS_TABLE_NAME")
-	in := os.Getenv("USERS_TABLE_GSI_NAME_IDENTITY")
 	input := &dynamodb.QueryInput{
 		TableName: aws.String(tn),
-		IndexName: aws.String(in),
 		ExpressionAttributeNames: map[string]*string{
 			"#id": aws.String("id"),
 		},
