@@ -26,5 +26,18 @@ func Root(request events.APIGatewayProxyRequest) (any, int, error) {
 		}
 		return nil, 400, fmt.Errorf("method %s is not allowed", method)
 	}
+
+	id := request.PathParameters["id"]
+	if id != "" {
+		pathArray = pathArray[1:]
+		if len(pathArray) == 0 {
+			method := request.HTTPMethod
+			switch method {
+			case "DELETE":
+				return pidDelete(request)
+			}
+			return nil, 400, fmt.Errorf("method %s is not allowed", method)
+		}
+	}
 	return nil, 400, fmt.Errorf("resource is not allowed")
 }
