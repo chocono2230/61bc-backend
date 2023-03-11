@@ -48,3 +48,16 @@ func getUserFromId(id string) (*User, int, error) {
 
 	return &user, 200, nil
 }
+
+func UserVerification(id string, identity string) (any, int, error) {
+	user, status, err := getUserFromId(id)
+	if err != nil {
+		return nil, status, err
+	}
+
+	if user.Identity == nil || *user.Identity != identity {
+		return nil, 401, fmt.Errorf("fail to verify user")
+	}
+
+	return "OK", 200, nil
+}
