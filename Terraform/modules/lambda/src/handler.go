@@ -32,20 +32,20 @@ func jsonResponse(body any, statusCode int, err error) (events.APIGatewayProxyRe
 				Body:       "respons body json marshal error",
 				StatusCode: 500,
 				Headers:    header,
-			}, err3
+			}, nil
 		}
 		return events.APIGatewayProxyResponse{
 			Body:       string(jsonBytes),
 			StatusCode: 500,
 			Headers:    header,
-		}, err2
+		}, nil
 	}
 
 	return events.APIGatewayProxyResponse{
 		Body:       string(jsonBytes),
 		StatusCode: statusCode,
 		Headers:    header,
-	}, err
+	}, nil
 }
 
 func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
