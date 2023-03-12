@@ -10,9 +10,11 @@ resource "aws_lambda_function" "this" {
 
   environment {
     variables = {
-      POSTS_TABLE_NAME         = var.posts_table_name
-      POSTS_TABLE_GSI_NAME_ALL = var.posts_table_gsi_name_all
-      POSTS_TABLE_GSI_NAME_USR = var.posts_table_gsi_name_usr
+      POSTS_TABLE_NAME              = var.posts_table_name
+      POSTS_TABLE_GSI_NAME_ALL      = var.posts_table_gsi_name_all
+      POSTS_TABLE_GSI_NAME_USR      = var.posts_table_gsi_name_usr
+      USERS_TABLE_NAME              = var.users_table_name
+      USERS_TABLE_GSI_NAME_IDENTITY = var.users_table_gsi_name_identity
     }
   }
 }
@@ -58,11 +60,15 @@ resource "aws_iam_policy" "lambda2dynamodb" {
               "dynamodb:Scan",
               "dynamodb:BatchWriteItem",
               "dynamodb:PutItem",
-              "dynamodb:UpdateItem"
+              "dynamodb:UpdateItem",
+              "dynamodb:DeleteItem"
           ],
           "Resource": [
             "arn:aws:dynamodb:*:*:table/${var.posts_table_name}",
-            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_all}"
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_all}",
+            "arn:aws:dynamodb:*:*:table/${var.posts_table_name}/index/${var.posts_table_gsi_name_usr}",
+            "arn:aws:dynamodb:*:*:table/${var.users_table_name}",
+            "arn:aws:dynamodb:*:*:table/${var.users_table_name}/index/${var.users_table_gsi_name_identity}"
           ]
       }
     ]

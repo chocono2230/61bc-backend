@@ -3,7 +3,7 @@ resource "aws_api_gateway_rest_api" "this" {
   body = data.template_file.openapi.rendered
 
   endpoint_configuration {
-    types = ["REGIONAL"]
+    types = ["EDGE"]
   }
 }
 

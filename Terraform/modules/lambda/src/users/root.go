@@ -1,4 +1,4 @@
-package posts
+package users
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func Root(request events.APIGatewayProxyRequest) (any, int, error) {
 	path := request.Path
 	trm := strings.Trim(path, "/")
 	pathArray := strings.Split(trm, "/")
-	if len(pathArray) < 1 || pathArray[0] != "posts" {
+	if len(pathArray) < 1 || pathArray[0] != "users" {
 		return nil, 400, fmt.Errorf("path is not allowed")
 	}
 
@@ -33,10 +33,8 @@ func Root(request events.APIGatewayProxyRequest) (any, int, error) {
 		if len(pathArray) == 0 {
 			method := request.HTTPMethod
 			switch method {
-			case "GET":
-				return pidGet(request)
-			case "DELETE":
-				return pidDelete(request)
+			case "PUT":
+				return pidPut(request)
 			}
 			return nil, 400, fmt.Errorf("method %s is not allowed", method)
 		}

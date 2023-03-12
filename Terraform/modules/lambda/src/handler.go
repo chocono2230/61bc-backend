@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/chocono2230/61bc-backend/lambda/healthcheck"
 	"github.com/chocono2230/61bc-backend/lambda/posts"
+	"github.com/chocono2230/61bc-backend/lambda/users"
 )
 
 func jsonResponse(body any, statusCode int, err error) (events.APIGatewayProxyResponse, error) {
@@ -31,20 +32,20 @@ func jsonResponse(body any, statusCode int, err error) (events.APIGatewayProxyRe
 				Body:       "respons body json marshal error",
 				StatusCode: 500,
 				Headers:    header,
-			}, err3
+			}, nil
 		}
 		return events.APIGatewayProxyResponse{
 			Body:       string(jsonBytes),
 			StatusCode: 500,
 			Headers:    header,
-		}, err2
+		}, nil
 	}
 
 	return events.APIGatewayProxyResponse{
 		Body:       string(jsonBytes),
 		StatusCode: statusCode,
 		Headers:    header,
-	}, err
+	}, nil
 }
 
 func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -63,6 +64,8 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 		res, statusCode, err = healthcheck.Root(request)
 	case "posts":
 		res, statusCode, err = posts.Root(request)
+	case "users":
+		res, statusCode, err = users.Root(request)
 	default:
 		err = fmt.Errorf("resource root is not allowed")
 		statusCode = 400

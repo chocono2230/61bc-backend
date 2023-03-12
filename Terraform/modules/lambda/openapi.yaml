@@ -20,7 +20,7 @@ paths:
       responses:
         '200':
           description: OK
-      x-internal: true
+      x-internal: false
       tags:
         - Test
       description: ヘルスチェック
@@ -85,7 +85,7 @@ paths:
                       $ref: '#/components/schemas/Post'
                 required:
                   - posts
-      x-internal: true
+      x-internal: false
       description: 全てのPostの取得
       operationId: postGetAll
       parameters:
@@ -172,7 +172,7 @@ paths:
                 properties:
                   post:
                     $ref: '#/components/schemas/Post'
-      x-internal: true
+      x-internal: false
       description: Postの取得
       operationId: getPost
       parameters: []
@@ -203,7 +203,7 @@ paths:
           default:
             statusCode: '200'
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+              method.response.header.Access-Control-Allow-Methods: '''GET,DELETE,OPTIONS'''
               method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
               method.response.header.Access-Control-Allow-Origin: '''*'''
         requestTemplates:
@@ -224,20 +224,14 @@ paths:
       summary: ''
       operationId: deletePost
       responses:
-        '202':
-          description: Accepted
+        '204':
+          description: No Content
         '400':
           description: Bad Request
       description: Postの削除
       tags:
         - Post
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: useridentity
-          description: ユーザ認証用文字列
-          required: true
+      parameters: []
       x-amazon-apigateway-integration:
         type: aws_proxy
         uri: '${integration_uri}'
@@ -245,6 +239,164 @@ paths:
         httpMethod: POST
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
+      requestBody:
+        $ref: '#/components/requestBodies/deletePost'
+  /users:
+    get:
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      responses:
+        '200':
+          $ref: '#/components/responses/allUsers'
+      x-internal: false
+      description: 全てのPublicUserの取得
+      operationId: getAllUsers
+      parameters: []
+      tags:
+        - User
+    options:
+      security: []
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        type: mock
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: '''GET,POST,OPTIONS'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestTemplates:
+          application/json: '{"statusCode":200}'
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      description: CORS/プリフライトリクエスト
+      operationId: ''
+      tags:
+        - Test
+    parameters: []
+    post:
+      summary: ''
+      operationId: postUser
+      responses:
+        '200':
+          $ref: '#/components/responses/createUser'
+        '201':
+          $ref: '#/components/responses/createUser'
+        '400':
+          description: Bad Request
+      description: Userの作成
+      requestBody:
+        $ref: '#/components/requestBodies/createUser'
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      tags:
+        - User
+  '/users/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      responses:
+        '200':
+          $ref: '#/components/responses/getUser'
+      x-internal: false
+      description: PublicUserの取得
+      operationId: getUser
+      parameters: []
+      tags:
+        - User
+    options:
+      security: []
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        type: mock
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: '''GET,PUT,OPTIONS'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestTemplates:
+          application/json: '{"statusCode":200}'
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      description: CORS/プリフライトリクエスト
+      operationId: ''
+      tags:
+        - Test
+    put:
+      summary: ''
+      operationId: putUser
+      responses:
+        '201':
+          $ref: '#/components/responses/putUser'
+      description: Userの更新(全体)
+      parameters: []
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      requestBody:
+        $ref: '#/components/requestBodies/putUser'
+      tags:
+        - User
 components:
   schemas:
     Post:
@@ -283,6 +435,35 @@ components:
     Empty:
       title: Empty Schema
       type: object
+    User:
+      title: User
+      x-stoplight:
+        id: jxex3v6g6hvwj
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        identity:
+          type: string
+      required:
+        - id
+        - displayName
+        - identity
+    PublicUser:
+      title: PublicUser
+      x-stoplight:
+        id: c4c4118xhiwcc
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+      required:
+        - id
+        - displayName
   securitySchemes:
     '${auth}':
       type: apiKey
@@ -313,6 +494,45 @@ components:
               - userId
               - content
       description: Post作成
+    createUser:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              displayName:
+                type: string
+              identity:
+                type: string
+            required:
+              - displayName
+              - identity
+    putUser:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              displayName:
+                type: string
+              identity:
+                type: string
+            required:
+              - displayName
+              - identity
+    deletePost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              identity:
+                type: string
+            required:
+              - userId
+              - identity
   responses:
     createPost:
       description: Example response
@@ -320,9 +540,54 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Post'
+    allUsers:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              users:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicUser'
+            required:
+              - users
+    createUser:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/components/schemas/User'
+    putUser:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/components/schemas/User'
+            required:
+              - user
+    getUser:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/components/schemas/PublicUser'
+            required:
+              - user
 x-internal: true
 tags:
   - name: Post
   - name: Test
+  - name: User
 security:
   - '${auth}': []

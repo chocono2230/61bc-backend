@@ -20,3 +20,9 @@ variable "posts_table_gsi_name_all" {
 variable "posts_table_gsi_name_usr" {
   type = string
 }
+variable "users_table_name" {
+  type = string
+}
+variable "users_table_gsi_name_identity" {
+  type = string
+}
