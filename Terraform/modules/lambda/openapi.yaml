@@ -397,106 +397,119 @@ paths:
         $ref: '#/components/requestBodies/putUser'
       tags:
         - User
-  /timages/{item}:
+  '/images/{item}':
     get:
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "item"
-        in: "path"
-        required: true
-        type: "string"
+        - name: item
+          in: path
+          required: true
+          type: string
       responses:
-        "200":
-          description: "200 response"
+        '200':
+          description: 200 response
           schema:
-            $ref: "#/definitions/Empty"
+            $ref: '#/definitions/Empty'
           headers:
             Access-Control-Allow-Origin:
-              type: "string"
+              type: string
             Content-Disposition:
-              type: "string"
+              type: string
             Content-Type:
-              type: "string"
+              type: string
       x-amazon-apigateway-integration:
-        type: "aws"
-        uri: "arn:aws:apigateway:ap-northeast-1:s3:path/${image_bucket_name}/{object}"
+        type: aws
+        uri: 'arn:aws:apigateway:ap-northeast-1:s3:path/${image_bucket_name}/{object}'
         credentials: '${credential_role_arn}'
-        httpMethod: "GET"
+        httpMethod: GET
         responses:
           default:
-            statusCode: "200"
+            statusCode: '200'
             responseParameters:
-              method.response.header.Content-Disposition: "'attachment; filename=\"download\"'"
-              method.response.header.Content-Type: "integration.response.header.Content-Type"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Content-Disposition: '''attachment; filename="download"'''
+              method.response.header.Content-Type: integration.response.header.Content-Type
+              method.response.header.Access-Control-Allow-Origin: '''*'''
         requestParameters:
-          integration.request.path.object: "method.request.path.item"
-        passthroughBehavior: "when_no_match"
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+      operationId: ''
+      tags:
+        - Image
     put:
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "item"
-        in: "path"
-        required: true
-        type: "string"
+        - name: item
+          in: path
+          required: true
+          type: string
       responses:
-        "200":
-          description: "200 response"
+        '200':
+          description: 200 response
           schema:
-            $ref: "#/definitions/Empty"
+            $ref: '#/definitions/Empty'
           headers:
             Access-Control-Allow-Origin:
-              type: "string"
+              type: string
       x-amazon-apigateway-integration:
-        type: "aws"
-        uri: "arn:aws:apigateway:ap-northeast-1:s3:path/${image_bucket_name}/{object}"
+        type: aws
+        uri: 'arn:aws:apigateway:ap-northeast-1:s3:path/${image_bucket_name}/{object}'
         credentials: '${credential_role_arn}'
-        httpMethod: "PUT"
+        httpMethod: PUT
         responses:
           default:
-            statusCode: "200"
+            statusCode: '200'
             responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Origin: '''*'''
         requestParameters:
-          integration.request.path.object: "method.request.path.item"
-        passthroughBehavior: "when_no_match"
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+      tags:
+        - Image
     options:
       security: []
       consumes:
-      - "application/json"
+        - application/json
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "item"
-        in: "path"
-        required: true
-        type: "string"
+        - name: item
+          in: path
+          required: true
+          type: string
       responses:
-        "200":
-          description: "200 response"
+        '200':
+          description: 200 response
           schema:
-            $ref: "#/definitions/Empty"
+            $ref: '#/definitions/Empty'
           headers:
             Access-Control-Allow-Origin:
-              type: "string"
+              type: string
             Access-Control-Allow-Methods:
-              type: "string"
+              type: string
             Access-Control-Allow-Headers:
-              type: "string"
+              type: string
       x-amazon-apigateway-integration:
-        type: "mock"
+        type: mock
         responses:
           default:
-            statusCode: "200"
+            statusCode: '200'
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,PUT'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS,PUT'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
         requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: when_no_match
+      tags:
+        - Test
+    parameters:
+      - schema:
+          type: string
+        name: item
+        in: path
+        required: true
 components:
   schemas:
     Post:
@@ -686,10 +699,11 @@ components:
               - user
 x-internal: true
 tags:
+  - name: Image
   - name: Post
   - name: Test
   - name: User
 security:
   - '${auth}': []
 x-amazon-apigateway-binary-media-types:
-- "image/*"
+  - image/*
