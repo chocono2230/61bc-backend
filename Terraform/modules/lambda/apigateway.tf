@@ -16,13 +16,14 @@ data "template_file" "openapi" {
     auth_provider_arn   = aws_cognito_user_pool.this.arn
     integration_uri     = aws_lambda_function.this.invoke_arn
     credential_role_arn = aws_iam_role.api2lambda.arn
+    image_bucket_name   = var.image_bucket_name
   }
 }
 
 # IAM Role for API Gateway Execution Lambda
 resource "aws_iam_role" "api2lambda" {
   name                = "${var.identifier}-apigateway-lambda-role"
-  managed_policy_arns = [aws_iam_policy.api2lambda.arn]
+  managed_policy_arns = [aws_iam_policy.api2lambda.arn, aws_iam_policy.api2s3.arn]
 
   assume_role_policy = <<EOF
 {
@@ -58,6 +59,26 @@ resource "aws_iam_policy" "api2lambda" {
   ]
 }
 EOF
+}
+
+resource "aws_iam_policy" "api2s3" {
+  name = "${var.identifier}-apigateway-s3-policy"
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:PutObject",
+          "s3:GetObject"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  EOF
 }
 
 # deploy
