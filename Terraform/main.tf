@@ -36,7 +36,8 @@ locals {
 
 module "lambda" {
   depends_on = [
-    module.dynamoDB
+    module.dynamoDB,
+    module.s3,
   ]
   source                        = "./modules/lambda"
   identifier                    = local.identifier
@@ -48,6 +49,7 @@ module "lambda" {
   posts_table_gsi_name_usr      = local.gsi_name_usr
   users_table_name              = module.dynamoDB.users_table_name
   users_table_gsi_name_identity = local.gsi_name_identity
+  image_bucket_name             = module.s3.bucket_name
 }
 
 module "dynamoDB" {
@@ -56,4 +58,10 @@ module "dynamoDB" {
   gsi_name_all      = local.gsi_name_all
   gsi_name_usr      = local.gsi_name_usr
   gsi_name_identity = local.gsi_name_identity
+}
+
+module "s3" {
+  source     = "./modules/s3"
+  identifier = "${local.identifier}-image"
+  env        = var.env
 }

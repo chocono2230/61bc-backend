@@ -26,3 +26,6 @@ variable "users_table_name" {
 variable "users_table_gsi_name_identity" {
   type = string
 }
+variable "image_bucket_name" {
+  type = string
+}
