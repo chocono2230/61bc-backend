@@ -535,6 +535,8 @@ components:
           properties:
             comment:
               type: string
+            image:
+              $ref: '#/components/schemas/Image'
         reactions:
           type: array
           items:
@@ -577,6 +579,19 @@ components:
       required:
         - id
         - displayName
+    Image:
+      title: Image
+      x-stoplight:
+        id: nwn13xbxiu16j
+      type: object
+      properties:
+        originId:
+          type: string
+        compressedId:
+          type: string
+      required:
+        - originId
+        - compressedId
   securitySchemes:
     '${auth}':
       type: apiKey
@@ -603,6 +618,8 @@ components:
                 properties:
                   comment:
                     type: string
+                  image:
+                    $ref: '#/components/schemas/Image'
             required:
               - userId
               - content
