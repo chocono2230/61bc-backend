@@ -83,10 +83,14 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Post'
+                  eskId:
+                    type: string
+                  eskTs:
+                    type: number
                 required:
                   - posts
       x-internal: false
-      description: 全てのPostの取得
+      description: 10件ずつPostの取得
       operationId: postGetAll
       parameters:
         - schema:
@@ -94,6 +98,16 @@ paths:
           in: query
           name: userid
           description: 特定ユーザに対して、全件取得
+        - schema:
+            type: string
+          in: query
+          description: ページネーション用Id
+          name: eskId
+        - schema:
+            type: number
+          in: query
+          name: eskTs
+          description: ページネーション用timestamp
       tags:
         - Post
     options:
