@@ -9,6 +9,12 @@ type Post struct {
 	LastReplyId *string `dynamodbav:"lastReplyId" json:"lastReplyId"`
 	Content     *struct {
 		Comment *string `dynamodbav:"comment" json:"comment"`
+		Image   *Image  `dynamodbav:"image" json:"image"`
 	} `dynamodbav:"content" json:"content"`
 	Reactions *[]any `dynamodbav:"reactions" json:"reactions"`
+}
+
+type Image struct {
+	OriginId     *string `dynamodbav:"originId" json:"originId"`
+	CompressedId *string `dynamodbav:"compressedId" json:"compressedId"`
 }

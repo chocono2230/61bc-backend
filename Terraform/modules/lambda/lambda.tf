@@ -87,7 +87,7 @@ resource "null_resource" "this" {
   }
 
   provisioner "local-exec" {
-    command     = "GOARCH=amd64 GOOS=linux go build -o ../bin/lambda"
+    command     = "GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -o ../bin/lambda"
     working_dir = local.golang_codedir_local_path
   }
   provisioner "local-exec" {

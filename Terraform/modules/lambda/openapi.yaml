@@ -83,10 +83,14 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Post'
+                  eskId:
+                    type: string
+                  eskTs:
+                    type: number
                 required:
                   - posts
       x-internal: false
-      description: 全てのPostの取得
+      description: 10件ずつPostの取得
       operationId: postGetAll
       parameters:
         - schema:
@@ -94,6 +98,16 @@ paths:
           in: query
           name: userid
           description: 特定ユーザに対して、全件取得
+        - schema:
+            type: string
+          in: query
+          description: ページネーション用Id
+          name: eskId
+        - schema:
+            type: number
+          in: query
+          name: eskTs
+          description: ページネーション用timestamp
       tags:
         - Post
     options:
@@ -397,6 +411,119 @@ paths:
         $ref: '#/components/requestBodies/putUser'
       tags:
         - User
+  '/images/{item}':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - name: item
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/Empty'
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+            Content-Disposition:
+              type: string
+            Content-Type:
+              type: string
+      x-amazon-apigateway-integration:
+        type: aws
+        uri: 'arn:aws:apigateway:ap-northeast-1:s3:path/${image_bucket_name}/{object}'
+        credentials: '${credential_role_arn}'
+        httpMethod: GET
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Content-Disposition: '''attachment; filename="download"'''
+              method.response.header.Content-Type: integration.response.header.Content-Type
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestParameters:
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+      operationId: ''
+      tags:
+        - Image
+    put:
+      produces:
+        - application/json
+      parameters:
+        - name: item
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/Empty'
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+      x-amazon-apigateway-integration:
+        type: aws
+        uri: 'arn:aws:apigateway:ap-northeast-1:s3:path/${image_bucket_name}/{object}'
+        credentials: '${credential_role_arn}'
+        httpMethod: PUT
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestParameters:
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+      tags:
+        - Image
+    options:
+      security: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: item
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/Empty'
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Headers:
+              type: string
+      x-amazon-apigateway-integration:
+        type: mock
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: '''GET,OPTIONS,PUT'''
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: when_no_match
+      tags:
+        - Test
+    parameters:
+      - schema:
+          type: string
+        name: item
+        in: path
+        required: true
 components:
   schemas:
     Post:
@@ -422,6 +549,8 @@ components:
           properties:
             comment:
               type: string
+            image:
+              $ref: '#/components/schemas/Image'
         reactions:
           type: array
           items:
@@ -464,6 +593,19 @@ components:
       required:
         - id
         - displayName
+    Image:
+      title: Image
+      x-stoplight:
+        id: nwn13xbxiu16j
+      type: object
+      properties:
+        originId:
+          type: string
+        compressedId:
+          type: string
+      required:
+        - originId
+        - compressedId
   securitySchemes:
     '${auth}':
       type: apiKey
@@ -490,6 +632,8 @@ components:
                 properties:
                   comment:
                     type: string
+                  image:
+                    $ref: '#/components/schemas/Image'
             required:
               - userId
               - content
@@ -586,8 +730,11 @@ components:
               - user
 x-internal: true
 tags:
+  - name: Image
   - name: Post
   - name: Test
   - name: User
 security:
   - '${auth}': []
+x-amazon-apigateway-binary-media-types:
+  - image/*

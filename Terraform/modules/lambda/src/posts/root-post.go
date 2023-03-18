@@ -19,6 +19,7 @@ type RequestBody struct {
 	ReplyId *string `json:"replyId"`
 	Content *struct {
 		Comment *string `json:"comment"`
+		Image   *Image  `json:"image"`
 	} `json:"content"`
 }
 
@@ -37,7 +38,7 @@ func post(request events.APIGatewayProxyRequest) (any, int, error) {
 	}
 
 	switch {
-	case rb.Content.Comment != nil && *rb.Content.Comment != "":
+	case rb.Content.Comment != nil || (rb.Content.Image != nil && rb.Content.Image.OriginId != nil && rb.Content.Image.CompressedId != nil):
 		return createPost(rb)
 	default:
 		return nil, 400, fmt.Errorf("content is required")
@@ -66,11 +67,14 @@ func createPost(requestBody RequestBody) (any, int, error) {
 		GsiSKey:   &gsiSKey,
 		ReplyId:   replyId,
 	}
-	if content.Comment != nil && *content.Comment != "" {
+
+	if content != nil {
 		post.Content = &struct {
 			Comment *string `dynamodbav:"comment" json:"comment"`
+			Image   *Image  `dynamodbav:"image" json:"image"`
 		}{
 			Comment: content.Comment,
+			Image:   content.Image,
 		}
 	}
 
