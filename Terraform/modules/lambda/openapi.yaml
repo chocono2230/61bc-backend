@@ -83,8 +83,10 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Post'
-                  exclusiveStartKey:
+                  eskId:
                     type: string
+                  eskTs:
+                    type: number
                 required:
                   - posts
       x-internal: false
@@ -99,8 +101,13 @@ paths:
         - schema:
             type: string
           in: query
-          name: exclusiveStartKey
-          description: ページネーション用
+          description: ページネーション用Id
+          name: eskId
+        - schema:
+            type: number
+          in: query
+          name: eskTs
+          description: ページネーション用timestamp
       tags:
         - Post
     options:
