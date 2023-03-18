@@ -83,10 +83,12 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Post'
+                  exclusiveStartKey:
+                    type: string
                 required:
                   - posts
       x-internal: false
-      description: 全てのPostの取得
+      description: 10件ずつPostの取得
       operationId: postGetAll
       parameters:
         - schema:
@@ -94,6 +96,11 @@ paths:
           in: query
           name: userid
           description: 特定ユーザに対して、全件取得
+        - schema:
+            type: string
+          in: query
+          name: exclusiveStartKey
+          description: ページネーション用
       tags:
         - Post
     options:
