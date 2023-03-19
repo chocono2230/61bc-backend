@@ -37,6 +37,8 @@ func Root(request events.APIGatewayProxyRequest) (any, int, error) {
 				return pidGet(request)
 			case "DELETE":
 				return pidDelete(request)
+			case "PATCH":
+				return pidPatch(request)
 			}
 			return nil, 400, fmt.Errorf("method %s is not allowed", method)
 		}
