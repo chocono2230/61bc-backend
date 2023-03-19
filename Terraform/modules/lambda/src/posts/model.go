@@ -11,7 +11,7 @@ type Post struct {
 		Comment *string `dynamodbav:"comment" json:"comment"`
 		Image   *Image  `dynamodbav:"image" json:"image"`
 	} `dynamodbav:"content" json:"content"`
-	Reactions *[]any `dynamodbav:"reactions" json:"reactions"`
+	Reactions *int `dynamodbav:"reactions" json:"reactions"`
 }
 
 type Image struct {
