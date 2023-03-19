@@ -270,6 +270,8 @@ paths:
         httpMethod: POST
         passthroughBehavior: when_no_match
         timeoutInMillis: 29000
+      tags:
+        - Post
   /users:
     get:
       x-amazon-apigateway-integration:
