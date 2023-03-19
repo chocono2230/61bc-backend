@@ -272,6 +272,7 @@ paths:
         timeoutInMillis: 29000
       tags:
         - Post
+      description: ''
   /users:
     get:
       x-amazon-apigateway-integration:
@@ -569,9 +570,7 @@ components:
             image:
               $ref: '#/components/schemas/Image'
         reactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Reaction'
+          type: number
       required:
         - id
         - userId
@@ -713,14 +712,11 @@ components:
           schema:
             type: object
             properties:
-              postId:
-                type: string
               type:
                 type: string
               payload:
                 type: object
             required:
-              - postId
               - type
   responses:
     createPost:
