@@ -217,7 +217,7 @@ paths:
           default:
             statusCode: '200'
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: '''GET,DELETE,OPTIONS'''
+              method.response.header.Access-Control-Allow-Methods: '''GET,PATCH,DELETE,OPTIONS'''
               method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
               method.response.header.Access-Control-Allow-Origin: '''*'''
         requestTemplates:
@@ -255,6 +255,24 @@ paths:
         timeoutInMillis: 29000
       requestBody:
         $ref: '#/components/requestBodies/deletePost'
+    patch:
+      summary: ''
+      operationId: patch-posts-id
+      responses:
+        '200':
+          $ref: '#/components/responses/updateReaction'
+      requestBody:
+        $ref: '#/components/requestBodies/updateReaction'
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri: '${integration_uri}'
+        credentials: '${credential_role_arn}'
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        timeoutInMillis: 29000
+      tags:
+        - Post
+      description: ''
   /users:
     get:
       x-amazon-apigateway-integration:
@@ -552,9 +570,7 @@ components:
             image:
               $ref: '#/components/schemas/Image'
         reactions:
-          type: array
-          items:
-            type: object
+          type: number
       required:
         - id
         - userId
@@ -606,6 +622,19 @@ components:
       required:
         - originId
         - compressedId
+    Reaction:
+      title: Reaction
+      x-stoplight:
+        id: tk1r3r0ihdhvf
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: number
+      required:
+        - name
+        - count
   securitySchemes:
     '${auth}':
       type: apiKey
@@ -677,6 +706,18 @@ components:
             required:
               - userId
               - identity
+    updateReaction:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              payload:
+                type: object
+            required:
+              - type
   responses:
     createPost:
       description: Example response
@@ -728,6 +769,17 @@ components:
                 $ref: '#/components/schemas/PublicUser'
             required:
               - user
+    updateReaction:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              post:
+                $ref: '#/components/schemas/Post'
+            required:
+              - post
 x-internal: true
 tags:
   - name: Image
